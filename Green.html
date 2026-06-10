@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aditya Jangid - Penetration Tester</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000000; color: #e8e8e8;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6; overflow-x: hidden; cursor: none;
+}
+#neural-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.container { max-width: 1400px; margin: 0 auto; padding: 80px 60px; position: relative; z-index: 2; }
+.cursor { width: 20px; height: 20px; border: 2px solid #4dffaa; border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: all 0.1s ease; mix-blend-mode: difference; }
+.cursor-follower { width: 40px; height: 40px; border: 1px solid rgba(77,255,170,0.3); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transition: all 0.3s ease; mix-blend-mode: difference; }
+.header-section { display: grid; grid-template-columns: 380px 1fr; gap: 80px; margin-bottom: 100px; align-items: start; }
+.left-header { position: sticky; top: 40px; }
+.name-block { margin-bottom: 30px; }
+.name { font-size: 3.5em; font-weight: 800; letter-spacing: -1.5px; line-height: 0.95; margin-bottom: 16px; color: #ffffff; text-transform: uppercase; }
+.roles-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.role-badge {
+  font-size: 0.88em; font-weight: 600; letter-spacing: 0.5px;
+  padding: 5px 14px; border-radius: 20px;
+}
+.role-red { color: #ff6b6b; border: 1px solid rgba(255,107,107,0.45); background: rgba(255,107,107,0.08); }
+.role-blue { color: #4db4ff; border: 1px solid rgba(77,180,255,0.45); background: rgba(77,180,255,0.08); }
+.sub-role { font-size: 0.95em; color: #888; font-style: italic; padding-left: 2px; }
+
+.contact-section { background: rgba(77,255,170,0.04); border: 1px solid rgba(77,255,170,0.18); padding: 22px; border-radius: 8px; box-shadow: 0 0 20px rgba(77,255,170,0.06); }
+.contact-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; color: #b0b0b0; text-decoration: none; font-size: 0.92em; transition: all 0.3s ease; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.contact-item:last-child { margin-bottom: 0; border-bottom: none; }
+.contact-item:hover { color: #4dffaa; padding-left: 8px; }
+.ci-icon { width: 20px; flex-shrink: 0; font-size: 1em; }
+.ci-label { font-size: 0.78em; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-right: 4px; }
+
+.right-header { padding-top: 60px; }
+.about-section { margin-bottom: 60px; }
+.section-label { font-size: 0.85em; text-transform: uppercase; letter-spacing: 2px; color: #4dffaa; margin-bottom: 15px; font-weight: 600; }
+.about-title { font-size: 2.8em; font-weight: 700; line-height: 1.2; margin-bottom: 25px; color: #ffffff; background: linear-gradient(135deg, #ffffff 0%, #4dffaa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.about-text { font-size: 1.1em; line-height: 1.8; color: #a0a0a0; max-width: 700px; }
+.dual-highlight { color: #c8e8ff; font-style: normal; }
+
+.main-content { display: grid; grid-template-columns: 380px 1fr; gap: 80px; }
+.sidebar { position: sticky; top: 40px; height: fit-content; }
+.sidebar-section { margin-bottom: 45px; }
+.sidebar-title { font-size: 1.3em; font-weight: 700; margin-bottom: 18px; color: #ffffff; border-bottom: 1px solid rgba(77,255,170,0.3); padding-bottom: 10px; position: relative; }
+.sidebar-title::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 50px; height: 2px; background: #4dffaa; box-shadow: 0 0 8px rgba(77,255,170,0.7); }
+
+.skill-group { margin-bottom: 22px; }
+.skill-group:last-child { margin-bottom: 0; }
+.skill-group-title { font-size: 0.85em; color: #4dffaa; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.skill-list { display: flex; flex-wrap: wrap; gap: 7px; }
+.skill-item { background: rgba(77,255,170,0.06); border: 1px solid rgba(77,255,170,0.22); padding: 5px 12px; border-radius: 20px; font-size: 0.82em; color: #b0b0b0; transition: all 0.3s ease; }
+.skill-item:hover { background: rgba(77,255,170,0.15); border-color: #4dffaa; color: #4dffaa; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(77,255,170,0.18); }
+
+.cert-list { list-style: none; }
+.cert-item { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #a0a0a0; transition: all 0.3s ease; position: relative; padding-left: 18px; font-size: 0.92em; }
+.cert-item::before { content: '▸'; position: absolute; left: 0; color: #4dffaa; opacity: 0; transition: opacity 0.3s ease; }
+.cert-item:hover { color: #4dffaa; padding-left: 26px; }
+.cert-item:hover::before { opacity: 1; }
+.cert-item:last-child { border-bottom: none; }
+
+.profiles-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.profile-link { display: flex; align-items: center; gap: 12px; padding: 10px 13px; background: rgba(77,255,170,0.04); border: 1px solid rgba(77,255,170,0.15); border-radius: 6px; text-decoration: none; color: #b0b0b0; font-size: 0.88em; transition: all 0.3s ease; }
+.profile-link:hover { background: rgba(77,255,170,0.09); border-color: rgba(77,255,170,0.45); color: #4dffaa; transform: translateX(5px); }
+.profile-icon { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.72em; font-weight: 700; flex-shrink: 0; letter-spacing: 0.5px; }
+.pi-gh  { background: rgba(200,200,200,0.1); color: #d0d0d0; border: 1px solid rgba(200,200,200,0.25); }
+.pi-li  { background: rgba(77,130,255,0.12); color: #4d82ff; border: 1px solid rgba(77,130,255,0.3); }
+.pi-htb { background: rgba(158,223,77,0.12); color: #9edf4d; border: 1px solid rgba(158,223,77,0.3); }
+.pi-ptl { background: rgba(255,140,77,0.12); color: #ff8c4d; border: 1px solid rgba(255,140,77,0.3); }
+.profile-info { display: flex; flex-direction: column; }
+.profile-name { font-weight: 600; color: #d8d8d8; font-size: 0.93em; }
+.profile-handle { font-size: 0.78em; color: #555; }
+
+.lang-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+.lang-item { background: rgba(77,255,170,0.04); padding: 9px; border-radius: 4px; font-size: 0.88em; color: #a0a0a0; text-align: center; transition: all 0.3s ease; border: 1px solid rgba(77,255,170,0.14); }
+.lang-item:hover { background: rgba(77,255,170,0.12); color: #4dffaa; transform: scale(1.05); }
+
+.content-area { padding-top: 0; }
+.section { margin-bottom: 75px; }
+.section-title { font-size: 2em; font-weight: 700; margin-bottom: 35px; color: #ffffff; position: relative; display: inline-block; }
+.section-title::after { content: ''; position: absolute; bottom: -8px; left: 0; width: 55px; height: 3px; background: #4dffaa; box-shadow: 0 0 8px rgba(77,255,170,0.6); animation: glow 2s ease-in-out infinite; }
+@keyframes glow { 0%,100% { box-shadow: 0 0 8px rgba(77,255,170,0.5); } 50% { box-shadow: 0 0 18px rgba(77,255,170,0.8), 0 0 28px rgba(77,255,170,0.4); } }
+
+.section-title.red-title::after { background: #ff6b6b; box-shadow: 0 0 8px rgba(255,107,107,0.5); animation: glow-red 2s ease-in-out infinite; }
+@keyframes glow-red { 0%,100% { box-shadow: 0 0 8px rgba(255,107,107,0.5); } 50% { box-shadow: 0 0 18px rgba(255,107,107,0.8), 0 0 28px rgba(255,107,107,0.4); } }
+.section-title.blue-title::after { background: #4db4ff; box-shadow: 0 0 8px rgba(77,180,255,0.5); animation: glow-blue 2s ease-in-out infinite; }
+@keyframes glow-blue { 0%,100% { box-shadow: 0 0 8px rgba(77,180,255,0.5); } 50% { box-shadow: 0 0 18px rgba(77,180,255,0.8), 0 0 28px rgba(77,180,255,0.4); } }
+
+.experience-grid { display: grid; gap: 35px; }
+.experience-card, .project-card {
+  background: rgba(77,255,170,0.025); border: 1px solid rgba(77,255,170,0.14);
+  padding: 32px; border-radius: 8px; transition: all 0.4s ease; position: relative; overflow: hidden;
+}
+.experience-card.red-card { background: rgba(255,107,107,0.025); border-color: rgba(255,107,107,0.14); }
+.experience-card.blue-card { background: rgba(77,180,255,0.025); border-color: rgba(77,180,255,0.14); }
+.experience-card:hover, .project-card:hover { background: rgba(77,255,170,0.06); border-color: rgba(77,255,170,0.4); transform: translateX(10px); box-shadow: -8px 8px 25px rgba(77,255,170,0.1); }
+.experience-card.red-card:hover { background: rgba(255,107,107,0.06); border-color: rgba(255,107,107,0.4); box-shadow: -8px 8px 25px rgba(255,107,107,0.1); }
+.experience-card.blue-card:hover { background: rgba(77,180,255,0.06); border-color: rgba(77,180,255,0.4); box-shadow: -8px 8px 25px rgba(77,180,255,0.1); }
+
+.card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; flex-wrap: wrap; gap: 12px; }
+.card-title { font-size: 1.4em; font-weight: 600; color: #ffffff; transition: color 0.3s ease; }
+.experience-card:hover .card-title, .project-card:hover .card-title { color: #4dffaa; }
+.experience-card.red-card:hover .card-title { color: #ff6b6b; }
+.experience-card.blue-card:hover .card-title { color: #4db4ff; }
+.card-date { font-size: 0.85em; font-weight: 500; padding: 4px 12px; border-radius: 20px; }
+.date-green { color: #4dffaa; border: 1px solid rgba(77,255,170,0.4); background: rgba(77,255,170,0.08); }
+.date-red { color: #ff6b6b; border: 1px solid rgba(255,107,107,0.4); background: rgba(255,107,107,0.08); }
+.date-blue { color: #4db4ff; border: 1px solid rgba(77,180,255,0.4); background: rgba(77,180,255,0.08); }
+.card-subtitle { font-size: 1em; color: #777; margin-bottom: 18px; }
+.card-description { color: #a0a0a0; line-height: 1.8; font-size: 0.96em; }
+.card-description ul { list-style: none; padding-left: 0; }
+.card-description li { padding-left: 20px; position: relative; margin-bottom: 9px; transition: all 0.3s ease; }
+.card-description li::before { content: '▹'; position: absolute; left: 0; color: #4dffaa; font-size: 1.1em; transition: transform 0.3s ease; }
+.red-card .card-description li::before { color: #ff6b6b; }
+.blue-card .card-description li::before { color: #4db4ff; }
+.card-description li:hover { color: #ffffff; padding-left: 25px; }
+.card-description li:hover::before { transform: translateX(3px); }
+
+.education-card { background: rgba(77,255,170,0.025); border: 1px solid rgba(77,255,170,0.14); padding: 32px; border-radius: 8px; transition: all 0.4s ease; }
+.education-card:hover { background: rgba(77,255,170,0.06); border-color: rgba(77,255,170,0.4); transform: translateY(-5px); box-shadow: 0 10px 35px rgba(77,255,170,0.1); }
+.edu-institution { font-size: 1.5em; font-weight: 600; color: #ffffff; margin-bottom: 10px; }
+.edu-degree { font-size: 1.05em; color: #4dffaa; margin-bottom: 8px; }
+.edu-details { color: #777; font-size: 0.93em; }
+.status-badge { display: inline-block; background: rgba(77,255,170,0.1); border: 1px solid rgba(77,255,170,0.4); color: #4dffaa; padding: 5px 14px; border-radius: 20px; font-size: 0.82em; margin-top: 12px; font-weight: 500; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 4px rgba(77,255,170,0.4); } 50% { box-shadow: 0 0 14px rgba(77,255,170,0.7); } }
+
+.footer { margin-top: 100px; padding: 40px 0; border-top: 1px solid rgba(77,255,170,0.12); text-align: center; }
+.footer-text { font-size: 0.88em; color: #444; }
+
+@media (max-width: 1200px) {
+  .header-section, .main-content { grid-template-columns: 1fr; gap: 60px; }
+  .left-header, .sidebar { position: relative; top: 0; }
+  .right-header { padding-top: 0; }
+  body { cursor: auto; }
+  .cursor, .cursor-follower { display: none; }
+}
+@media (max-width: 768px) {
+  .container { padding: 40px 25px; }
+  .name { font-size: 2.5em; }
+  .about-title { font-size: 2em; }
+  .section-title { font-size: 1.7em; }
+  .header-section { margin-bottom: 60px; }
+  .lang-grid { grid-template-columns: 1fr; }
+}
+@media print {
+  body { background: #fff; color: #000; cursor: auto; }
+  #neural-canvas, .cursor, .cursor-follower { display: none; }
+  .container { padding: 20px; }
+  .experience-card, .project-card, .education-card, .contact-section { background: #fff !important; border: 1px solid #ccc !important; break-inside: avoid; box-shadow: none !important; }
+  * { color: #000 !important; animation: none !important; text-shadow: none !important; -webkit-text-fill-color: #000 !important; }
+  .about-title { background: none !important; }
+  .sidebar { position: relative; }
+  .section-title::after, .sidebar-title::after { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<canvas id="neural-canvas"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursor-follower"></div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header-section">
+    <div class="left-header">
+      <div class="name-block">
+        <h1 class="name">Aditya<br>Jangid</h1>
+        <div class="roles-row">
+          <span class="role-badge role-red">Red Team</span>
+          <span class="role-badge role-blue">Blue Team</span>
+        </div>
+        <div class="sub-role">Penetration Tester · Bug Bounty Hunter · SOC Analyst</div>
+      </div>
+
+      <div class="contact-section">
+        <a href="#" class="contact-item" id="gmail-link">
+          <span class="ci-icon">✉</span>
+          <span class="ci-label">Email</span>
+          <span>Aditya.kj911@gmail.com</span>
+        </a>
+        <a href="tel:+919110689618" class="contact-item">
+          <span class="ci-icon">📞</span>
+          <span class="ci-label">Phone</span>
+          <span>+91 91106 89618</span>
+        </a>
+        <a href="https://www.linkedin.com/in/aditya-jangid-0a7462329" class="contact-item" target="_blank">
+          <span class="ci-icon">💼</span>
+          <span class="ci-label">LinkedIn</span>
+          <span>aditya-jangid-0a7462329</span>
+        </a>
+        <a href="https://github.com/saw8age" class="contact-item" target="_blank">
+          <span class="ci-icon">💻</span>
+          <span class="ci-label">GitHub</span>
+          <span>github.com/saw8age</span>
+        </a>
+        <a href="https://profile.hackthebox.com/profile/019c7b05-1459-7074-a854-ba1846a8a6d1" class="contact-item" target="_blank">
+          <span class="ci-icon">🟩</span>
+          <span class="ci-label">HTB</span>
+          <span>Hack The Box Profile</span>
+        </a>
+        <a href="https://pentesterlab.com/profile/sawsage" class="contact-item" target="_blank">
+          <span class="ci-icon">🔶</span>
+          <span class="ci-label">PTL</span>
+          <span>PentesterLab / sawsage</span>
+        </a>
+        <a href="https://app.letsdefend.io/user/Sawsagee" class="contact-item" target="_blank">
+          <span class="ci-icon">🛡</span>
+          <span class="ci-label">LetsDefend</span>
+          <span>letsdefend.io / Sawsagee</span>
+        </a>
+        <div class="contact-item">
+          <span class="ci-icon">📍</span>
+          <span class="ci-label">Location</span>
+          <span>Karnataka / Rajasthan</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-header">
+      <div class="about-section">
+        <div class="section-label">About Me</div>
+        <h2 class="about-title">Breaking systems,<br>building defenses.</h2>
+        <p class="about-text">
+          Penetration tester and bug bounty hunter specializing in network and web application security,
+          with a <span class="dual-highlight">dual background in blue team operations</span> — including SOC analysis,
+          incident response, and malware analysis. This red-meets-blue perspective means I understand
+          both how attacks are built and how defenders catch them. Active CTF player on Hack The Box,
+          constantly sharpening both offensive and defensive tradecraft.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="sidebar">
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Technical Skills</h3>
+        <div class="skill-group">
+          <div class="skill-group-title">Offensive</div>
+          <div class="skill-list">
+            <span class="skill-item">Network Pentesting</span>
+            <span class="skill-item">Web App Security</span>
+            <span class="skill-item">Exploit Development</span>
+            <span class="skill-item">Post-Exploitation</span>
+            <span class="skill-item">Privilege Escalation</span>
+            <span class="skill-item">Active Directory</span>
+            <span class="skill-item">Social Engineering</span>
+            <span class="skill-item">Bug Bounty</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-title">Defensive</div>
+          <div class="skill-list">
+            <span class="skill-item">SOC Analysis</span>
+            <span class="skill-item">Incident Response</span>
+            <span class="skill-item">Malware Analysis</span>
+            <span class="skill-item">Log Analysis</span>
+            <span class="skill-item">Threat Hunting</span>
+            <span class="skill-item">SIEM</span>
+            <span class="skill-item">IOC Analysis</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-title" style="color:#ff6b6b;">Red Team Tools</div>
+          <div class="skill-list">
+            <span class="skill-item">Burp Suite</span>
+            <span class="skill-item">Metasploit</span>
+            <span class="skill-item">Nmap</span>
+            <span class="skill-item">SQLmap</span>
+            <span class="skill-item">Impacket</span>
+            <span class="skill-item">BloodHound</span>
+            <span class="skill-item">Responder</span>
+            <span class="skill-item">Hydra</span>
+            <span class="skill-item">John the Ripper</span>
+            <span class="skill-item">Hashcat</span>
+            <span class="skill-item">Netcat</span>
+            <span class="skill-item">aircrack-ng</span>
+            <span class="skill-item">Gobuster</span>
+            <span class="skill-item">ffuf</span>
+            <span class="skill-item">CrackMapExec</span>
+            <span class="skill-item">Evil-WinRM</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-title" style="color:#4db4ff;">Blue Team Tools</div>
+          <div class="skill-list">
+            <span class="skill-item">Wireshark</span>
+            <span class="skill-item">Splunk</span>
+            <span class="skill-item">Velociraptor</span>
+            <span class="skill-item">VirusTotal</span>
+            <span class="skill-item">Any.run</span>
+            <span class="skill-item">Hybrid Analysis</span>
+            <span class="skill-item">Joe Sandbox</span>
+            <span class="skill-item">Hatching Triage</span>
+            <span class="skill-item">OPSWAT MetaDefender</span>
+            <span class="skill-item">Intezer Analyze</span>
+            <span class="skill-item">InQuest Labs</span>
+            <span class="skill-item">Nessus</span>
+            <span class="skill-item">YARA</span>
+            <span class="skill-item">Volatility</span>
+            <span class="skill-item">Sysmon</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-title">Programming</div>
+          <div class="skill-list">
+            <span class="skill-item">Python</span>
+            <span class="skill-item">Bash</span>
+            <span class="skill-item">C</span>
+            <span class="skill-item">Java</span>
+            <span class="skill-item">SQL</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Certifications</h3>
+        <ul class="cert-list">
+          <li class="cert-item">PentesterLab Certifications</li>
+          <li class="cert-item">Udemy Security Courses</li>
+          <li class="cert-item">Hack The Box Student</li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Languages</h3>
+        <div class="lang-grid">
+          <div class="lang-item">English</div>
+          <div class="lang-item">Hindi</div>
+          <div class="lang-item">Kannada</div>
+          <div class="lang-item">Marathi</div>
+          <div class="lang-item">Rajasthani</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="content-area">
+
+      <div class="section">
+        <h2 class="section-title">Education</h2>
+        <div class="education-card">
+          <div class="edu-institution">KLS Shri Vasantrao Potdar Polytechnic</div>
+          <div class="edu-degree">Diploma in Computer Science</div>
+          <div class="edu-details">Currently pursuing | 3rd Year</div>
+          <div class="edu-details">Expected Graduation: 2026</div>
+          <span class="status-badge">In Progress</span>
+        </div>
+      </div>
+
+      <!-- RED TEAM -->
+      <div class="section">
+        <h2 class="section-title red-title">Network Penetration Testing</h2>
+        <div class="experience-grid">
+          <div class="experience-card red-card">
+            <div class="card-header">
+              <h3 class="card-title">Reconnaissance & Enumeration</h3>
+            </div>
+            <div class="card-subtitle">Infrastructure Mapping & Service Discovery</div>
+            <div class="card-description"><ul>
+              <li>Full-scope network scanning with Nmap — SYN, UDP, version detection, OS fingerprinting</li>
+              <li>Service enumeration across SMB, FTP, SSH, RDP, HTTP/S, SNMP, DNS, and LDAP</li>
+              <li>Subdomain enumeration and DNS zone transfer attempts</li>
+              <li>SNMP community string brute-forcing for network device enumeration</li>
+              <li>Banner grabbing and service fingerprinting using Netcat and custom scripts</li>
+            </ul></div>
+          </div>
+
+          <div class="experience-card red-card">
+            <div class="card-header">
+              <h3 class="card-title">Network Exploitation</h3>
+              <span class="card-date date-red">Active</span>
+            </div>
+            <div class="card-subtitle">Vulnerability Exploitation & Lateral Movement</div>
+            <div class="card-description"><ul>
+              <li>Exploiting EternalBlue (MS17-010), PrintNightmare, and known CVEs via Metasploit and manual PoCs</li>
+              <li>Credential attacks — Hydra brute-force across SSH, RDP, SMB, FTP, and HTTP forms</li>
+              <li>LLMNR/NBT-NS poisoning with Responder to capture NTLMv2 hashes</li>
+              <li>Pass-the-Hash and Pass-the-Ticket attacks for lateral movement using Impacket</li>
+              <li>SMB relay attacks and anonymous share enumeration for sensitive data extraction</li>
+              <li>ARP spoofing and MITM interception of cleartext credentials with Wireshark</li>
+              <li>Pivoting through compromised hosts to access internal network segments</li>
+            </ul></div>
+          </div>
+
+          <div class="experience-card red-card">
+            <div class="card-header">
+              <h3 class="card-title">Active Directory Attacks</h3>
+            </div>
+            <div class="card-subtitle">Domain Enumeration & Privilege Escalation</div>
+            <div class="card-description"><ul>
+              <li>AD enumeration using BloodHound/SharpHound to map attack paths to Domain Admin</li>
+              <li>Kerberoasting and AS-REP Roasting to extract and crack service account hashes offline</li>
+              <li>DCSync attacks to dump NTDS.dit credential material using Impacket secretsdump</li>
+              <li>Identifying and abusing ACL misconfigurations — GenericAll, WriteDACL, ForceChangePassword</li>
+              <li>GPO abuse and misconfigured delegation exploitation for privilege escalation</li>
+            </ul></div>
+          </div>
+
+          <div class="experience-card red-card">
+            <div class="card-header">
+              <h3 class="card-title">Wireless & Protocol Attacks</h3>
+            </div>
+            <div class="card-subtitle">WiFi Security & Layer 2/3 Attacks</div>
+            <div class="card-description"><ul>
+              <li>WPA2 handshake capture and offline cracking with aircrack-ng and hashcat</li>
+              <li>Evil twin AP setup for credential harvesting on open networks</li>
+              <li>VLAN hopping and 802.1Q double-tagging attacks in misconfigured environments</li>
+              <li>IPv6 exploitation — router advertisement spoofing for MitM on IPv4-only setups</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title red-title">Web Application Security</h2>
+        <div class="experience-grid">
+          <div class="experience-card red-card">
+            <div class="card-header">
+              <h3 class="card-title">Web App Exploitation</h3>
+              <span class="card-date date-red">Active</span>
+            </div>
+            <div class="card-subtitle">OWASP Top 10 & Beyond</div>
+            <div class="card-description"><ul>
+              <li>SQL injection — error-based, blind, time-based, UNION attacks using SQLmap and manual testing</li>
+              <li>Stored and reflected XSS, DOM-based XSS, and CSP bypass techniques</li>
+              <li>CSRF, SSRF, XXE, and Insecure Deserialization exploitation</li>
+              <li>Authentication bypass — JWT manipulation, broken session management, OAuth flaws</li>
+              <li>API security testing including REST and GraphQL endpoint enumeration and abuse</li>
+              <li>Using Burp Suite for intercepting, fuzzing, and scanning web targets</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLUE TEAM -->
+      <div class="section">
+        <h2 class="section-title blue-title">Blue Team Operations</h2>
+        <div class="experience-grid">
+          <div class="experience-card blue-card">
+            <div class="card-header">
+              <h3 class="card-title">SOC Analysis</h3>
+              <span class="card-date date-blue">Active</span>
+            </div>
+            <div class="card-subtitle">Threat Detection & Alert Triage</div>
+            <div class="card-description"><ul>
+              <li>Monitoring and triaging security alerts across SIEM platforms — analyzing logs from endpoints, firewalls, and network devices</li>
+              <li>Classifying true positives vs false positives and escalating confirmed incidents</li>
+              <li>Writing detection rules and correlation logic to surface attacker TTPs</li>
+              <li>Mapping observed behavior to MITRE ATT&amp;CK framework for structured analysis</li>
+              <li>Tracking IOCs — malicious IPs, domains, file hashes — and enriching alerts with threat intelligence</li>
+            </ul></div>
+          </div>
+
+          <div class="experience-card blue-card">
+            <div class="card-header">
+              <h3 class="card-title">Incident Response</h3>
+            </div>
+            <div class="card-subtitle">Investigation & Containment</div>
+            <div class="card-description"><ul>
+              <li>Following IR lifecycle — identification, containment, eradication, recovery, and lessons learned</li>
+              <li>Analyzing endpoint artifacts: process trees, registry changes, scheduled tasks, and persistence mechanisms</li>
+              <li>Network forensics — PCAP analysis with Wireshark to reconstruct attack timelines</li>
+              <li>Memory forensics basics for identifying injected code and live malware artifacts</li>
+              <li>Red team background directly informs IR — understanding attacker tools helps identify the right forensic artifacts</li>
+            </ul></div>
+          </div>
+
+          <div class="experience-card blue-card">
+            <div class="card-header">
+              <h3 class="card-title">Malware Analysis</h3>
+            </div>
+            <div class="card-subtitle">Static & Dynamic Analysis</div>
+            <div class="card-description"><ul>
+              <li>Static analysis — strings extraction, PE header inspection, import table review for suspicious APIs</li>
+              <li>Dynamic analysis in isolated sandbox environments — monitoring process behavior, file drops, registry writes, and network calls</li>
+              <li>Identifying common malware families: RATs, stealers, droppers, and loaders</li>
+              <li>Writing YARA rules for detection of identified malware patterns</li>
+              <li>Deobfuscating PowerShell and VBScript payloads to understand delivery mechanisms</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUG BOUNTY / CTF -->
+      <div class="section">
+        <h2 class="section-title">Bug Bounty & CTF</h2>
+        <div class="experience-grid">
+          <div class="project-card">
+            <div class="card-header">
+              <h3 class="card-title">Bug Bounty Hunter</h3>
+              <span class="card-date date-green">Active</span>
+            </div>
+            <div class="card-subtitle">Independent Security Researcher</div>
+            <div class="card-description"><ul>
+              <li>Actively hunting for vulnerabilities in public and private bug bounty programs</li>
+              <li>Specialized in OWASP Top 10 — XSS, SQLi, CSRF, IDOR, and authentication flaws</li>
+              <li>Focus on responsible disclosure and helping organizations improve their security posture</li>
+            </ul></div>
+          </div>
+          <div class="project-card">
+            <div class="card-header">
+              <h3 class="card-title">CTF Competitor</h3>
+              <span class="card-date date-green">Ongoing</span>
+            </div>
+            <div class="card-subtitle">Hack The Box & Other Platforms</div>
+            <div class="card-description"><ul>
+              <li>Regular participant in CTF competitions on Hack The Box</li>
+              <li>Solving challenges across Web, Crypto, Forensics, Pwn, and Reverse Engineering</li>
+              <li>Building practical skills through hands-on offensive hacking labs and machines</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WRITEUPS -->
+      <div class="section">
+        <h2 class="section-title">Machine Writeups</h2>
+        <div class="experience-grid">
+          <div class="project-card">
+            <div class="card-header">
+              <h3 class="card-title">HTB & CTF Writeups</h3>
+              <span class="card-date date-green">Ongoing</span>
+            </div>
+            <div class="card-subtitle">Documented Walkthroughs & Attack Chains</div>
+            <div class="card-description"><ul>
+              <li>Writing detailed post-compromise writeups for retired Hack The Box machines — covering recon, exploitation, privilege escalation, and lessons learned</li>
+              <li>Each writeup documents the full attack chain with tool commands, screenshots, and the reasoning behind each step</li>
+              <li>Serves as both personal reference and community knowledge-sharing for others learning offensive security</li>
+              <li>Covers web, Active Directory, Linux, and Windows machines across Easy to Hard difficulty tiers</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROJECTS -->
+      <div class="section">
+        <h2 class="section-title">Projects & Labs</h2>
+        <div class="experience-grid">
+          <div class="project-card">
+            <div class="card-header">
+              <h3 class="card-title">Personal Security Lab</h3>
+            </div>
+            <div class="card-description">
+              Built a home lab with vulnerable VMs, an internal AD domain, and segmented networks for practising full attack chains — from initial recon to domain compromise. Also used for blue team exercises: simulating attacks and building detections for them.
+            </div>
+          </div>
+          <div class="project-card">
+            <div class="card-header">
+              <h3 class="card-title">Security Tool Development</h3>
+            </div>
+            <div class="card-description">
+              Developing Python scripts to automate recon, credential spraying, and post-exploitation workflows. Contributing to open-source security projects on GitHub at github.com/saw8age.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer">
+    <p class="footer-text">© 2025 Aditya Jangid · Penetration Tester & Blue Teamer</p>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('neural-canvas');
+const ctx = canvas.getContext('2d');
+
+let logW = 0, logH = 0;
+const NODE_COUNT = 220;
+const CONNECT_DIST = 200;
+const MAX_CON = 8;
+const nodes = [];
+
+function getPageDims() {
+  return {
+    w: document.documentElement.scrollWidth  || window.innerWidth,
+    h: Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, window.innerHeight)
+  };
+}
+
+function applyDPR() {
+  const dpr = window.devicePixelRatio || 1;
+  const { w, h } = getPageDims();
+  logW = w; logH = h;
+  canvas.width  = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  canvas.style.width  = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function initNodes() {
+  nodes.length = 0;
+  const { w, h } = getPageDims();
+  for (let i = 0; i < NODE_COUNT; i++) {
+    nodes.push({
+      x:  Math.random() * w,
+      y:  Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.28,
+      vy: (Math.random() - 0.5) * 0.18,
+      r:  0.8 + Math.random() * 1.4
+    });
+  }
+}
+
+// Wait for full layout before sizing — fixes the left-cluster bug
+window.addEventListener('load', () => {
+  applyDPR();
+  initNodes();
+  draw();
+});
+
+window.addEventListener('resize', () => {
+  setTimeout(() => { applyDPR(); initNodes(); }, 150);
+});
+
+function draw() {
+  if (!logW || !logH) { requestAnimationFrame(draw); return; }
+  ctx.clearRect(0, 0, logW, logH);
+
+  // Connections
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    let c = 0;
+    for (let j = i + 1; j < nodes.length && c < MAX_CON; j++) {
+      const m = nodes[j];
+      const dx = m.x - n.x, dy = m.y - n.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < CONNECT_DIST) {
+        const alpha = (1 - dist / CONNECT_DIST) * 0.38;
+        ctx.beginPath();
+        ctx.moveTo(n.x, n.y);
+        ctx.lineTo(m.x, m.y);
+        ctx.strokeStyle = `rgba(120, 240, 180, ${alpha})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        c++;
+      }
+    }
+  }
+
+  // Nodes + movement
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    n.x += n.vx; n.y += n.vy;
+    if (n.x < 0 || n.x > logW) n.vx *= -1;
+    if (n.y < 0 || n.y > logH) n.vy *= -1;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(120, 240, 180, 0.4)';
+    ctx.fill();
+  }
+
+  requestAnimationFrame(draw);
+}
+draw();
+
+const cursor = document.getElementById('cursor');
+const follower = document.getElementById('cursor-follower');
+let mx = 0, my = 0, fx = 0, fy = 0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = (mx - 10) + 'px';
+  cursor.style.top = (my - 10) + 'px';
+});
+(function af() {
+  fx += (mx - fx) * 0.1; fy += (my - fy) * 0.1;
+  follower.style.left = (fx - 20) + 'px';
+  follower.style.top = (fy - 20) + 'px';
+  requestAnimationFrame(af);
+})();
+
+document.querySelectorAll('a, .skill-item, .lang-item, .cert-item').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.width = '40px'; cursor.style.height = '40px';
+    cursor.style.backgroundColor = 'rgba(77,255,170,0.1)';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.width = '20px'; cursor.style.height = '20px';
+    cursor.style.backgroundColor = 'transparent';
+  });
+});
+
+document.getElementById('gmail-link').addEventListener('click', function(e) {
+  e.preventDefault();
+  const sub = encodeURIComponent('Regarding Your Profile – Aditya Jangid');
+  const body = encodeURIComponent('Hi Aditya,\n\n');
+  window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=Aditya.kj911@gmail.com&su=${sub}&body=${body}`, '_blank');
+});
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -80px 0px' });
+
+document.querySelectorAll('.experience-card, .project-card, .education-card').forEach(card => {
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(30px)';
+  card.style.transition = 'all 0.6s ease';
+  obs.observe(card);
+});
+</script>
+</body>
+</html>
